@@ -1,5 +1,5 @@
 function jiraStory(message) {
-  const storyNum = message.match('jira_story_regex');
+  const storyNum = message.match(/([a-z]+-[0-9]+)/gi);
   if (storyNum == null) {
     return null;
   }

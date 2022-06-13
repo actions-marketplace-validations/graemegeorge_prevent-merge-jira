@@ -44544,22 +44544,6 @@ module.exports = jiraLabels;
 
 /***/ }),
 
-/***/ 5997:
-/***/ ((module) => {
-
-function jiraStory(message) {
-  const storyNum = message.match('jira_story_regex');
-  if (storyNum == null) {
-    return null;
-  }
-  return storyNum[1];
-}
-
-module.exports = jiraStory;
-
-
-/***/ }),
-
 /***/ 3836:
 /***/ ((module) => {
 
@@ -44594,18 +44578,21 @@ module.exports = unsatisfiedRequirements;
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(5952);
-const jiraStory = __nccwpck_require__(5997);
+// const jiraStory = require('./jira_story');
 const jiraLabels = __nccwpck_require__(3346);
 const unsatisfiedRequirements = __nccwpck_require__(3836);
 
 async function run() {
   // get the JIRA number from the message
-  const storyNum = jiraStory(core.getInput('jira_story_source'));
-  if (storyNum == null) {
-    console.log('No JIRA story number found');
-    core.setFailed('No JIRA story number found');
-    return;
-  }
+
+  const storyNum = 'FIN-10024';
+
+  // const storyNum = jiraStory(core.getInput('jira_story_source'));
+  // if (storyNum == null) {
+  //   console.log('No JIRA story number found');
+  //   core.setFailed('No JIRA story number found');
+  //   return;
+  // }
 
   // fetch the jira API for the story information
   let labels = await jiraLabels(

@@ -5,7 +5,8 @@
   "main": "labels.js",
   "scripts": {
     "test": "jest",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build": "ncc build index.js --license licenses.txt"
   },
   "dependencies": {
     "@actions/core": "^1.2.6",

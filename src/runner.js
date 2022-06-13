@@ -1,16 +1,19 @@
 const core = require('@actions/core');
-const jiraStory = require('./jira_story');
+// const jiraStory = require('./jira_story');
 const jiraLabels = require('./fetch_labels');
 const unsatisfiedRequirements = require('./missing_labels');
 
 async function run() {
   // get the JIRA number from the message
-  const storyNum = jiraStory(core.getInput('jira_story_source'));
-  if (storyNum == null) {
-    console.log('No JIRA story number found');
-    core.setFailed('No JIRA story number found');
-    return;
-  }
+
+  const storyNum = 'FIN-10024';
+
+  // const storyNum = jiraStory(core.getInput('jira_story_source'));
+  // if (storyNum == null) {
+  //   console.log('No JIRA story number found');
+  //   core.setFailed('No JIRA story number found');
+  //   return;
+  // }
 
   // fetch the jira API for the story information
   let labels = await jiraLabels(

@@ -6,7 +6,7 @@ inputs:
   jira_story_source:
     description: Where to look for the jira story
     required: false
-    default: ${GITHUB_REF}
+    default: ${GITHUB_REF##*/}
   jira_story_regex:
     description: Provide a regex to capture the jira story
     required: false
