@@ -7,13 +7,6 @@ inputs:
     description: Where to look for the jira story
     required: false
     default: ${GITHUB_REF##*/}
-  jira_story_regex:
-    description: Provide a regex to capture the jira story
-    required: false
-    default: /([a-z]+-[0-9]+)/gi
-  # commit_message:
-  #   description: The commit message that contains the JIRA story.
-  #   required: true
   jira_user:
     description: The email of the jira user.
     required: true
@@ -23,18 +16,14 @@ inputs:
   jira_url:
     description: The base URL for jira
     required: true
-  default_labels:
-    description: Assumed required labels
+  jira_approve_label:
+    description: Which label allows merge
     required: false
-    default: 'design-qa-required|product-qa-required'
-  required_suffix:
-    description: Append this to the end of a label to mark it required
+    default: 'qa-approved'
+  jira_fail_label:
+    description: Which label fails a PR
     required: false
-    default: 'required'
-  approved_suffix:
-    description: Append this to the end of a label to mark it approved
-    required: false
-    default: 'approved'
+    default: 'qa-failed'
 runs:
   using: 'node12'
   main: 'dist/index.js'

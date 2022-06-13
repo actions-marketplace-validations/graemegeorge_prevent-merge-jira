@@ -1,56 +1,56 @@
 const core = require('@actions/core');
-// const jiraStory = require('./jira_story');
-const jiraLabels = require('./fetch_labels');
-const unsatisfiedRequirements = require('./missing_labels');
+const JiraApi = require('jira-client');
+
+function getJiraLabels(story, user, token, url) {
+  const jira = new JiraApi({
+    protocol: 'https',
+    host: url,
+    username: user,
+    password: token,
+    apiVersion: '2',
+    strictSSL: true
+  });
+
+  return jira
+    .findIssue(story)
+    .then((issue) => issue.fields.labels)
+    .catch((err) => {
+      console.error(err);
+    });
+}
 
 async function run() {
-  // get the JIRA number from the message
+  const branch = core.getInput('jira_story_source');
+  const matchedStoryId = branch.match(/([a-z]+-[0-9]+)/gi);
 
-  const storyNum = 'FIN-10024';
+  if (!matchedStoryId) {
+    core.setFailed('Jira story number not found');
+    return;
+  }
 
-  // const storyNum = jiraStory(core.getInput('jira_story_source'));
-  // if (storyNum == null) {
-  //   console.log('No JIRA story number found');
-  //   core.setFailed('No JIRA story number found');
-  //   return;
-  // }
+  const storyId = matchedStoryId[0];
+
+  core.info(`Found ${storyId}...`);
 
   // fetch the jira API for the story information
-  let labels = await jiraLabels(
-    storyNum,
+  let labels = await getJiraLabels(
+    storyId,
     core.getInput('jira_user'),
     core.getInput('jira_token'),
     core.getInput('jira_url')
   );
 
-  if (labels == null) {
-    labels = core.getInput('default_labels').split('|');
-  } else {
-    core
-      .getInput('default_labels')
-      .split('|')
-      .forEach((label) => {
-        if (!labels.includes(label)) {
-          labels.push(label);
-        }
-      });
+  if (!labels.includes(core.getInput('jira_approve_label'))) {
+    core.setFailed('QA has not yet approved this pull request.');
+    return;
   }
 
-  //Parse out the labels on the story
-  console.log(`Testing labels: ${labels.join(',')}`);
-  const result = unsatisfiedRequirements(
-    labels,
-    core.getInput('required_suffix'),
-    core.getInput('approved_suffix')
-  );
-  console.log(`unsatisfiedRequirements results: ${result.join(',')}`);
-  if (result.length > 0) {
-    core.setFailed(
-      `Jira ticket indicates the following labels are still needed: ${result.join(
-        ', '
-      )}`
-    );
+  if (labels.includes(core.getInput('jira_fail_label'))) {
+    core.setFailed('QA has failed this pull request.');
+    return;
   }
+
+  core.info('QA has approved this pull request!');
 }
 
 module.exports = run;

@@ -44516,12 +44516,13 @@ function dumpException(ex)
 
 /***/ }),
 
-/***/ 3346:
+/***/ 8881:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
+const core = __nccwpck_require__(5952);
 const JiraApi = __nccwpck_require__(6609);
 
-function jiraLabels(story, user, token, url) {
+function getJiraLabels(story, user, token, url) {
   const jira = new JiraApi({
     protocol: 'https',
     host: url,
@@ -44539,97 +44540,38 @@ function jiraLabels(story, user, token, url) {
     });
 }
 
-module.exports = jiraLabels;
-
-
-/***/ }),
-
-/***/ 3836:
-/***/ ((module) => {
-
-function applicableLabels(labels, regex) {
-  return labels
-    .filter((label) => label.match(regex))
-    .map((label) => label.match(regex)[1]);
-}
-
-function mismatches(required, approved) {
-  return required.filter((label) => !approved.includes(label));
-}
-
-function unsatisfiedRequirements(labels, require, approved) {
-  const requiredRegex = new RegExp(`^(.+)-${require}$`);
-  const approvedRegex = new RegExp(`^(.+)-${approved}$`);
-
-  const requiredNames = applicableLabels(labels, requiredRegex);
-  const approvedNames = applicableLabels(labels, approvedRegex);
-
-  return mismatches(requiredNames, approvedNames).map(
-    (label) => `${label}-${approved}`
-  );
-}
-
-module.exports = unsatisfiedRequirements;
-
-
-/***/ }),
-
-/***/ 8881:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const core = __nccwpck_require__(5952);
-// const jiraStory = require('./jira_story');
-const jiraLabels = __nccwpck_require__(3346);
-const unsatisfiedRequirements = __nccwpck_require__(3836);
-
 async function run() {
-  // get the JIRA number from the message
+  const branch = core.getInput('jira_story_source');
+  const matchedStoryId = branch.match(/([a-z]+-[0-9]+)/gi);
 
-  const storyNum = 'FIN-10024';
+  if (!matchedStoryId) {
+    core.setFailed('Jira story number not found');
+    return;
+  }
 
-  // const storyNum = jiraStory(core.getInput('jira_story_source'));
-  // if (storyNum == null) {
-  //   console.log('No JIRA story number found');
-  //   core.setFailed('No JIRA story number found');
-  //   return;
-  // }
+  const storyId = matchedStoryId[0];
+
+  core.info(`Found ${storyId}...`);
 
   // fetch the jira API for the story information
-  let labels = await jiraLabels(
-    storyNum,
+  let labels = await getJiraLabels(
+    storyId,
     core.getInput('jira_user'),
     core.getInput('jira_token'),
     core.getInput('jira_url')
   );
 
-  if (labels == null) {
-    labels = core.getInput('default_labels').split('|');
-  } else {
-    core
-      .getInput('default_labels')
-      .split('|')
-      .forEach((label) => {
-        if (!labels.includes(label)) {
-          labels.push(label);
-        }
-      });
+  if (!labels.includes(core.getInput('jira_approve_label'))) {
+    core.setFailed('QA has not yet approved this pull request.');
+    return;
   }
 
-  //Parse out the labels on the story
-  console.log(`Testing labels: ${labels.join(',')}`);
-  const result = unsatisfiedRequirements(
-    labels,
-    core.getInput('required_suffix'),
-    core.getInput('approved_suffix')
-  );
-  console.log(`unsatisfiedRequirements results: ${result.join(',')}`);
-  if (result.length > 0) {
-    core.setFailed(
-      `Jira ticket indicates the following labels are still needed: ${result.join(
-        ', '
-      )}`
-    );
+  if (labels.includes(core.getInput('jira_fail_label'))) {
+    core.setFailed('QA has failed this pull request.');
+    return;
   }
+
+  core.info('QA has approved this pull request!');
 }
 
 module.exports = run;
