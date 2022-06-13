@@ -1,5 +1,7 @@
 name: 'Prevent merge JIRA Approvals'
 description: 'Check labels for convention ending with -required/-approved'
+icon: git-merge
+color: blue
 inputs:
   jira_story_source:
     description: Where to look for the jira story
