@@ -21,8 +21,10 @@ function getJiraLabels(story, user, token, url) {
 
 async function run() {
   const branch = core.getInput('jira_story_source');
+  console.log(branch);
   core.info(branch);
   const matchedStoryId = branch.match(/([a-z]+-[0-9]+)/gi);
+  console.log(matchedStoryId);
   core.info(matchedStoryId);
 
   if (!matchedStoryId) {
@@ -32,6 +34,7 @@ async function run() {
 
   const storyId = matchedStoryId[0];
 
+  console.log(`Found ${storyId}...`);
   core.info(`Found ${storyId}...`);
 
   // fetch the jira API for the story information
