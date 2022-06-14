@@ -21,7 +21,9 @@ function getJiraLabels(story, user, token, url) {
 
 async function run() {
   const branch = core.getInput('jira_story_source');
+  core.info(branch);
   const matchedStoryId = branch.match(/([a-z]+-[0-9]+)/gi);
+  core.info(matchedStoryId);
 
   if (!matchedStoryId) {
     core.setFailed('Jira story number not found');
